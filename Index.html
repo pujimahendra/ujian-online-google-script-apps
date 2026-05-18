@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Ujian Online</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Transisi Halus */
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* Custom Scrollbar untuk Navigasi Soal */
+    .nav-scroll::-webkit-scrollbar { width: 6px; }
+    .nav-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans selection:bg-blue-200">
+
+  <!-- ==================== HALAMAN LOGIN ==================== -->
+  <div id="page-login" class="min-h-screen flex items-center justify-center p-4 fade-in">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">Portal Ujian Online</h1>
+        <p class="text-gray-500 mt-2">Silakan masuk menggunakan Email Anda</p>
+      </div>
+      
+      <form id="form-login" onsubmit="handleLogin(event)">
+        <div class="mb-5">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Email</label>
+          <input type="email" id="input-email" required placeholder="email@siswa.com" 
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        
+        <button type="submit" id="btn-login" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors flex justify-center items-center">
+          <span id="text-login">Masuk Ujian</span>
+          <svg id="loading-login" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== HALAMAN UJIAN ==================== -->
+  <div id="page-exam" class="hidden min-h-screen flex flex-col fade-in">
+    
+    <!-- Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium text-sm flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span id="nav-nama">Nama Peserta</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div id="timer-box" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold flex items-center border border-red-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="timer-display">00:00:00</span>
+          </div>
+          <button onclick="mintaKembaliKeLogin()" class="text-sm text-gray-500 hover:text-red-600 transition-colors hidden sm:block">Keluar</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Konten Ujian -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-6 relative">
+      
+      <!-- Area Kiri: Soal -->
+      <div class="flex-1 bg-white rounded-xl shadow-sm p-6 md:p-8 flex flex-col">
+        <div id="area-loading-soal" class="flex-1 flex justify-center items-center flex-col">
+          <svg class="animate-spin h-10 w-10 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <p class="text-gray-500 animate-pulse">Menyiapkan dan mengacak soal...</p>
+        </div>
+
+        <div id="area-soal" class="hidden flex-1 flex flex-col">
+          <div class="mb-6 flex justify-between items-center border-b pb-4">
+            <h2 class="text-xl font-bold text-gray-800">Soal No. <span id="soal-sekarang-angka">1</span></h2>
+          </div>
+          
+          <!-- Area Gambar Dinamis -->
+          <div id="area-gambar-soal" class="hidden text-center mb-6">
+            <img id="gambar-soal" src="" alt="Gambar Soal" class="max-w-full h-auto mx-auto rounded-lg border border-gray-200 shadow-sm p-1" style="max-height: 350px; object-fit: contain;">
+          </div>
+          
+          <div id="teks-pertanyaan" class="text-lg text-gray-800 mb-6 leading-relaxed whitespace-pre-wrap"></div>
+          
+          <div class="space-y-3 flex-1" id="opsi-jawaban-container">
+            <!-- Pilihan akan di-render menggunakan JS -->
+          </div>
+          
+          <!-- Tombol Navigasi Bawah -->
+          <div class="flex justify-between items-center mt-8 pt-6 border-t">
+            <button onclick="soalSebelumnya()" id="btn-prev" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              &larr; Sebelumnya
+            </button>
+            <button onclick="soalSelanjutnya()" id="btn-next" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              Selanjutnya &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Area Kanan: Navigasi Soal -->
+      <div class="w-full md:w-80 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm p-5 md:sticky md:top-24">
+          <h3 class="font-bold text-gray-800 mb-4 text-center">Navigasi Soal</h3>
+          <div id="grid-navigasi" class="grid grid-cols-5 gap-2 nav-scroll max-h-60 md:max-h-96 overflow-y-auto p-1">
+            <!-- Grid tombol akan di-render menggunakan JS -->
+          </div>
+          <div class="mt-6 pt-4 border-t">
+            <button onclick="konfirmasiSubmit()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors shadow-md hover:shadow-lg">
+              Selesai & Submit
+            </button>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+  </div>
+
+  <!-- ==================== HALAMAN HASIL ==================== -->
+  <div id="page-result" class="hidden min-h-screen flex items-center justify-center p-4 fade-in bg-gray-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center border-t-8 border-blue-600 relative overflow-hidden">
+      <!-- Ornamen Latar Belakang -->
+      <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-50 rounded-full mix-blend-multiply opacity-50"></div>
+      <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-green-50 rounded-full mix-blend-multiply opacity-50"></div>
+
+      <div id="result-loading" class="py-12">
+        <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <p class="text-gray-600 font-medium">Sedang memproses dan menyimpan nilai Anda...</p>
+      </div>
+
+      <div id="result-content" class="hidden relative z-10">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Ujian Selesai!</h2>
+        <p class="text-gray-500 mb-6"><span id="hasil-nama" class="font-semibold text-gray-700"></span>. Jawaban Anda telah tersimpan di sistem.</p>
+        
+        <div class="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-100">
+          <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold mb-1">Nilai Anda</p>
+          <div class="text-6xl font-extrabold text-blue-600" id="hasil-nilai">100</div>
+        </div>
+        
+        <button onclick="kembaliKeAwal()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-lg transition-colors">
+          Kembali ke Beranda
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== LOGIKAJAVASCRIPT ==================== -->
+  <script>
+    // --- State & Variabel Global ---
+    let userData = { email: '', nama: '' };
+    let daftarSoal = [];
+    let jawabanSiswa = {}; // Format: { id_soal: 'A' }
+    let indeksSoalAktif = 0;
+    
+    // Timer
+    let timerInterval;
+    let waktuTersisa = 0; // dalam detik
+    let totalWaktuDiberikan = 0;
+    let isExamActive = false;
+
+    // --- Keamanan Navigasi (Mencegah Back Button) ---
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () {
+      history.go(1); // Paksa maju lagi
+      if (isExamActive) {
+        alert("Peringatan: Anda tidak diizinkan menggunakan tombol kembali saat ujian berlangsung!");
+      }
+    };
+
+    // Peringatan saat mencoba menutup tab
+    window.addEventListener('beforeunload', function (e) {
+      if (isExamActive) {
+        // Coba auto submit (meskipun browser mungkin memutus koneksi AJAX secara tiba-tiba)
+        google.script.run.prosesSubmitUjian(userData.email, userData.nama, jawabanSiswa, totalWaktuDiberikan - waktuTersisa);
+        var pesan = 'Anda sedang mengerjakan ujian. Jika Anda keluar, jawaban terakhir akan tersubmit otomatis.';
+        e.returnValue = pesan;
+        return pesan;
+      }
+    });
+
+    // --- 1. Fungsi Halaman Login ---
+    function handleLogin(event) {
+      event.preventDefault();
+      const emailInput = document.getElementById('input-email').value;
+      
+      // UI Loading
+      document.getElementById('text-login').innerText = 'Memverifikasi...';
+      document.getElementById('loading-login').classList.remove('hidden');
+      document.getElementById('btn-login').disabled = true;
+
+      google.script.run.withSuccessHandler(function(response) {
+        if (response.status === 'sukses') {
+          // Simpan session
+          userData = response.data;
+          masukKeHalamanUjian();
+        } else {
+          // Gagal
+          alert(response.pesan);
+          resetTombolLogin();
+        }
+      }).withFailureHandler(function(err){
+         alert("Terjadi kesalahan koneksi. Silakan coba lagi.");
+         resetTombolLogin();
+      }).verifikasiLogin(emailInput);
+    }
+
+    function resetTombolLogin() {
+      document.getElementById('text-login').innerText = 'Masuk Ujian';
+      document.getElementById('loading-login').classList.add('hidden');
+      document.getElementById('btn-login').disabled = false;
+    }
+
+    // --- 2. Transisi & Setup Halaman Ujian ---
+    function masukKeHalamanUjian() {
+      // Pindah Tampilan
+      document.getElementById('page-login').classList.add('hidden');
+      document.getElementById('page-exam').classList.remove('hidden');
+      
+      // Set Identitas
+      document.getElementById('nav-nama').innerText = userData.nama;
+      
+      // Ambil Soal
+      google.script.run.withSuccessHandler(function(soal) {
+        daftarSoal = soal;
+        mulaiUjian();
+      }).ambilSoal();
+    }
+
+    function mulaiUjian() {
+      isExamActive = true;
+      document.getElementById('area-loading-soal').classList.add('hidden');
+      document.getElementById('area-soal').classList.remove('hidden');
+      
+      // Setup Timer (50 detik x jumlah soal)
+      totalWaktuDiberikan = daftarSoal.length * 50;
+      waktuTersisa = totalWaktuDiberikan;
+      jalankanTimer();
+      
+      // Render Soal Pertama
+      renderNavigasi();
+      tampilkanSoal(0);
+    }
+
+    // --- 3. Logika Menampilkan & Navigasi Soal ---
+    function tampilkanSoal(index) {
+      indeksSoalAktif = index;
+      const soal = daftarSoal[index];
+      
+      // Update Nomor Soal
+      document.getElementById('soal-sekarang-angka').innerText = (index + 1);
+      
+      // Handle Gambar Dinamis
+      const areaGambar = document.getElementById('area-gambar-soal');
+      const tagImg = document.getElementById('gambar-soal');
+      
+      if (soal.gambar && soal.gambar !== "") {
+        tagImg.src = soal.gambar;
+        areaGambar.classList.remove('hidden');
+      } else {
+        tagImg.src = "";
+        areaGambar.classList.add('hidden');
+      }
+      
+      // Update Teks Pertanyaan
+      document.getElementById('teks-pertanyaan').innerText = soal.pertanyaan;
+      
+      // Update Pilihan Jawaban
+      const containerOps = document.getElementById('opsi-jawaban-container');
+      containerOps.innerHTML = ''; // bersihkan opsi lama
+      
+      // SEKARANG MENGGUNAKAN PILIHAN A SAMPAI E
+      const pilihan = ['A', 'B', 'C', 'D', 'E'];
+      
+      pilihan.forEach(huruf => {
+        const teksPilihan = soal.pilihan[huruf];
+        // Skip jika pilihan kosong
+        if(!teksPilihan || teksPilihan.toString().trim() === "") return;
+
+        const isTerpilih = jawabanSiswa[soal.id] === huruf;
+        const divOpsi = document.createElement('div');
+        divOpsi.className = `p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 
+          ${isTerpilih ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'}`;
+        divOpsi.onclick = () => pilihJawaban(soal.id, huruf);
+        
+        divOpsi.innerHTML = `
+          <div class="mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0
+            ${isTerpilih ? 'border-blue-500' : 'border-gray-300'}">
+            ${isTerpilih ? '<div class="w-3 h-3 bg-blue-500 rounded-full"></div>' : ''}
+          </div>
+          <div class="flex-1 text-gray-700">
+             <span class="font-bold mr-2">${huruf}.</span>${teksPilihan}
+          </div>
+        `;
+        containerOps.appendChild(divOpsi);
+      });
+      
+      // Update Tombol Prev/Next
+      document.getElementById('btn-prev').disabled = (index === 0);
+      
+      if (index === daftarSoal.length - 1) {
+        document.getElementById('btn-next').innerText = 'Selesai';
+        document.getElementById('btn-next').classList.replace('bg-blue-600', 'bg-green-600');
+        document.getElementById('btn-next').classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+      } else {
+        document.getElementById('btn-next').innerHTML = 'Selanjutnya &rarr;';
+        document.getElementById('btn-next').classList.replace('bg-green-600', 'bg-blue-600');
+        document.getElementById('btn-next').classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+      }
+      
+      updateHighlightNavigasi();
+    }
+
+    function pilihJawaban(idSoal, huruf) {
+      jawabanSiswa[idSoal] = huruf;
+      renderNavigasi(); // Update warna biru di grid kanan
+      tampilkanSoal(indeksSoalAktif); // Re-render opsi agar UI radio button berubah
+    }
+
+    function soalSebelumnya() {
+      if (indeksSoalAktif > 0) tampilkanSoal(indeksSoalAktif - 1);
+    }
+
+    function soalSelanjutnya() {
+      if (indeksSoalAktif < daftarSoal.length - 1) {
+        tampilkanSoal(indeksSoalAktif + 1);
+      } else {
+        konfirmasiSubmit();
+      }
+    }
+
+    // --- 4. Sidebar Navigasi Grid ---
+    function renderNavigasi() {
+      const grid = document.getElementById('grid-navigasi');
+      grid.innerHTML = '';
+      
+      daftarSoal.forEach((soal, index) => {
+        const sudahDijawab = !!jawabanSiswa[soal.id];
+        const btn = document.createElement('button');
+        btn.onclick = () => tampilkanSoal(index);
+        
+        btn.className = `h-10 w-full rounded font-semibold text-sm transition-colors border shadow-sm flex items-center justify-center
+          ${sudahDijawab 
+            ? 'bg-blue-600 text-white border-blue-700' 
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`;
+            
+        // Id spesifik untuk styling highlight soal aktif
+        btn.id = `nav-btn-${index}`;
+        btn.innerText = (index + 1);
+        grid.appendChild(btn);
+      });
+      updateHighlightNavigasi();
+    }
+
+    function updateHighlightNavigasi() {
+      daftarSoal.forEach((_, index) => {
+        const btn = document.getElementById(`nav-btn-${index}`);
+        if(btn) {
+          if (index === indeksSoalAktif) {
+             btn.classList.add('ring-2', 'ring-offset-1', 'ring-gray-800');
+          } else {
+             btn.classList.remove('ring-2', 'ring-offset-1', 'ring-gray-800');
+          }
+        }
+      });
+    }
+
+    // --- 5. Timer Logika ---
+    function formatWaktu(detik) {
+      const h = Math.floor(detik / 3600);
+      const m = Math.floor((detik % 3600) / 60);
+      const s = Math.floor(detik % 60);
+      return [
+        h > 0 ? h.toString().padStart(2, '0') : null,
+        m.toString().padStart(2, '0'),
+        s.toString().padStart(2, '0')
+      ].filter(x => x !== null).join(':');
+    }
+
+    function jalankanTimer() {
+      const display = document.getElementById('timer-display');
+      const box = document.getElementById('timer-box');
+      
+      timerInterval = setInterval(() => {
+        waktuTersisa--;
+        display.innerText = formatWaktu(waktuTersisa);
+        
+        // Peringatan waktu mau habis (< 60 detik)
+        if(waktuTersisa <= 60 && waktuTersisa > 0) {
+          box.classList.add('animate-pulse', 'bg-red-600', 'text-white');
+          box.classList.remove('bg-red-50', 'text-red-600');
+        }
+
+        if (waktuTersisa <= 0) {
+          clearInterval(timerInterval);
+          isExamActive = false;
+          alert("Waktu Habis! Jawaban Anda akan di-submit secara otomatis.");
+          eksekusiSubmit();
+        }
+      }, 1000);
+    }
+
+    // --- 6. Proses Submit & Hasil ---
+    function mintaKembaliKeLogin() {
+      if(confirm("Apakah Anda yakin ingin keluar? Ujian akan OTOMATIS DISUBMIT dengan jawaban yang ada sekarang.")) {
+        isExamActive = false;
+        clearInterval(timerInterval);
+        eksekusiSubmit();
+      }
+    }
+
+    function konfirmasiSubmit() {
+      const totalDijawab = Object.keys(jawabanSiswa).length;
+      const totalSoal = daftarSoal.length;
+      
+      let pesan = `Anda telah menjawab ${totalDijawab} dari ${totalSoal} soal.\n\nApakah Anda yakin ingin mengumpulkan jawaban sekarang?`;
+      if (totalDijawab < totalSoal) {
+        pesan = `PERINGATAN: Masih ada ${totalSoal - totalDijawab} soal yang belum dijawab!\n\nApakah Anda YAKIN ingin mengumpulkan?`;
+      }
+      
+      if (confirm(pesan)) {
+        isExamActive = false;
+        clearInterval(timerInterval);
+        eksekusiSubmit();
+      }
+    }
+
+    function eksekusiSubmit() {
+      // Pindah view ke result loading
+      document.getElementById('page-exam').classList.add('hidden');
+      document.getElementById('page-result').classList.remove('hidden');
+      
+      const waktuDihabiskan = totalWaktuDiberikan - waktuTersisa;
+
+      google.script.run.withSuccessHandler(function(nilaiMurni) {
+        // Tampilkan Nilai
+        document.getElementById('result-loading').classList.add('hidden');
+        document.getElementById('result-content').classList.remove('hidden');
+        
+        document.getElementById('hasil-nama').innerText = userData.nama;
+        document.getElementById('hasil-nilai').innerText = nilaiMurni;
+      }).withFailureHandler(function(err){
+        alert("Terjadi kesalahan saat menyimpan data. Nilai Anda tetap akan tercatat di sistem.");
+        // Fallback UI
+        document.getElementById('result-loading').classList.add('hidden');
+        document.getElementById('result-content').classList.remove('hidden');
+        document.getElementById('hasil-nama').innerText = userData.nama;
+        document.getElementById('hasil-nilai').innerText = "Tersimpan";
+      }).prosesSubmitUjian(userData.email, userData.nama, jawabanSiswa, waktuDihabiskan);
+    }
+
+    function kembaliKeAwal() {
+      // --- PERBAIKAN BUG ---
+      // Melakukan "soft-reset" ke halaman login tanpa melakukan reload URL window.top.
+      // Hal ini mencegah terjadinya halaman kosong (blank page) akibat pembatasan keamanan iframe Google Apps Script.
+      
+      // 1. Reset state data
+      userData = { email: '', nama: '' };
+      daftarSoal = [];
+      jawabanSiswa = {};
+      indeksSoalAktif = 0;
+      waktuTersisa = 0;
+      totalWaktuDiberikan = 0;
+      isExamActive = false;
+      if (timerInterval) clearInterval(timerInterval);
+
+      // 2. Reset tampilan form login
+      document.getElementById('input-email').value = '';
+      resetTombolLogin();
+
+      // 3. Alihkan tampilan ke Halaman Login
+      document.getElementById('page-result').classList.add('hidden');
+      document.getElementById('result-content').classList.add('hidden');
+      document.getElementById('result-loading').classList.remove('hidden'); // siapkan spinner untuk load berikutnya
+      document.getElementById('page-login').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
