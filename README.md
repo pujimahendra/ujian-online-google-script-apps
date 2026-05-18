@@ -2,7 +2,7 @@
 
 Sistem Ujian Online / *Computer Based Test* (CBT) modern, ringan, dan aman yang dibangun menggunakan **Google Apps Script (GAS)** sebagai *backend* dan **Google Sheets** sebagai basis datanya (*database*). 
 
-Sisi antarmuka (*frontend*) dirancang menggunakan HTML5, **Tailwind CSS**, dan JavaScript Vanilla dengan pendekatan **Single Page Application (SPA)** untuk memberikan pengalaman ujian yang lancar, responsif di HP/komputer, serta bebas dari kendala pemblokiran keamanan (*CORS/Iframe block*) khas Google.
+Sisi antarmuka (*frontend*) dirancang menggunakan HTML5, **Tailwind CSS**, dan JavaScript Vanilla dengan pendekatan **Single Page Application (SPA)** untuk memberikan pengalaman ujian yang lancar, dan responsif di HP/komputer.
 
 ---
 
