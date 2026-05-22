@@ -20,6 +20,18 @@ Sisi antarmuka (*frontend*) dirancang menggunakan HTML5, **Tailwind CSS**, dan J
 
 ---
 
+## Gambar Dokumentasi
+
+Berikut hasil tangkapan layar:
+
+### 1. Login
+<img src="Dokumentasi login.png" width="500">
+
+### 1. Ujian
+<img src="Dokumentasi soal.png" width="500">
+
+---
+
 ## Struktur Database (Google Sheets)
 
 Aplikasi ini membutuhkan satu buah file Google Spreadsheet dengan 3 nama sheet berikut (pastikan penamaan sheet dan kolom sama persis):
