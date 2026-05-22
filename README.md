@@ -25,10 +25,10 @@ Sisi antarmuka (*frontend*) dirancang menggunakan HTML5, **Tailwind CSS**, dan J
 Berikut hasil tangkapan layar:
 
 ### 1. Login
-<img src="Dokumentasi login.png" width="500">
+<img src="Dokumentasi login.png" width="700">
 
-### 1. Ujian
-<img src="Dokumentasi soal.png" width="500">
+### 2. Ujian
+<img src="Dokumentasi soal.png" width="700">
 
 ---
 
